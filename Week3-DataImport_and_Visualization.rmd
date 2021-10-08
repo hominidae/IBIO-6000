@@ -5,10 +5,9 @@
   output: html_document
 ---
 
-This is an R markdown document intended to perform an iterative example of processing a text file containing a set of comma spaced value data downloaded from BOLD.
+This is an R markdown document intended to perform an iterative example of processing a text file containing a set of comma spaced value or tab spaced value data that has been downloaded from BOLD.
 
-If you'd like to know more about R Markdown vs R scripts, here's a link to a tutorial demonstrating the differences between R scripts and R Markdown.
-
+If you'd like to know more about R Markdown vs R scripts, here's a link to a tutorial demonstrating the differences between R scripts and R Markdown:
 https://rmarkdown.rstudio.com/articles_intro.html
 
 This is an example of a chunk of R code embedded within the R markdown file. Note that code chunks are inserted with the tilde character repeated three times. The same tilde character x3 is also used to close out the R code chunk.
