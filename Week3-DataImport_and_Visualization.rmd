@@ -1,0 +1,55 @@
+---
+  title: "IBIO*6000 - Ecology & Behaviour"
+  author: "Bryan Vandenbrink"
+  date: "08/10/2021"
+  output: html_document
+---
+
+This is an R markdown document intended to perform an iterative example of processing a text file containing a set of comma spaced value data downloaded from BOLD.
+
+If you'd like to know more about R Markdown vs R scripts, here's a link to a tutorial demonstrating the differences between R scripts and R Markdown.
+
+https://rmarkdown.rstudio.com/articles_intro.html
+
+This is an example of a chunk of R code embedded within the R markdown file. Note that code chunks are inserted with the tilde character repeated three times. The same tilde character x3 is also used to close out the R code chunk.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+In the example above, the Knitr package is called and will run each chunk of R code in the document and append the results next to the R code chunk.
+
+```{r tidyverse message=FALSE}
+# This is an example of a comment within a chunk of R code.
+# The code below checks if the tidyverse package is installed
+# and if it is, installs it.
+if (!require("tidyverse")) install.packages("tidyverse")
+# Otherwise, it loads the tidyverse package.
+library(tidyverse)
+```
+
+Here is a hyperlink to the data import tutorial:
+https://r4ds.had.co.nz/data-import.html
+
+Now that we've loaded the tidyverse package, which includes methods and functions for processing csv files we will begin loading the csv file.
+
+As indicated in the tutorial, you have read_csv (Data separated by comma's), read_csv2 (Data separated by semi-colon's), read_tsv (Data separated by tabs). In the case of BOLD systems data, tab separated is one of the format's that specimen data is available as so we will be using that.
+
+Note on file path and directories. The "/" is an escape character within R so it will be processed that way. When entering the directory for where your data is located, use a backslash character instead.
+
+If you're wondering what the difference is, here's a link to an explanation of the difference between the two:
+https://sites.cs.ucsb.edu/~pconrad/topics/BackslashVsForwardSlash/
+
+```
+# Here we will load the available data into specimen_data.
+specimen_data <- read_tsv("E:\2021_UoG\IBIO 6000\DS-ITLP.txt")
+# All the data from the tab separated format file should now be loaded into R.
+```
+
+Note that within the R script the tidyverse library automatically assigns it's own interpreted data types to the columns. For an explanation of date types in R, here's a handy reference: https://swcarpentry.github.io/r-novice-inflammation/13-supp-data-structures/
+
+In my case, when importing the BOLD data from a tab separated file the data structures/types used were character, character or chr, double class or a double-precision floating point number, and finally logical or lgl.
+
+Note that values that are blank are considered to be N/A or false, hence the existence of the logical or lgl data type within the data.
+
+This is an important consideration from the point of data normalization. Namely that some values within columns might not be filled in and as a result will show up as N/A.
+
