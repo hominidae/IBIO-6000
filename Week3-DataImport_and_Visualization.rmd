@@ -52,3 +52,9 @@ Note that values that are blank are considered to be N/A or false, hence the exi
 
 This is an important consideration from the point of data normalization. Namely that some values within columns might not be filled in and as a result will show up as N/A.
 
+```
+# This will produce a basic graph using ggplot.
+# The graph it will generate is a composition of recordID and the captured insect family name within the order lepidoptera. (Since all captured specimens were moths.)
+```
+ggplot(data = specimen_data) +
+  geom_point(mapping = aes(x = recordID, y = family_name))
