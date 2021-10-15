@@ -5,9 +5,10 @@
   output: html_document
 ---
 
-This is an R markdown document intended to perform an iterative example of processing a text file containing a set of comma spaced value or tab spaced value data that has been downloaded from BOLD.
+This is an R markdown document intended to perform an iterative example of processing a text file containing a set of comma spaced value data downloaded from BOLD.
 
-If you'd like to know more about R Markdown vs R scripts, here's a link to a tutorial demonstrating the differences between R scripts and R Markdown:
+If you'd like to know more about R Markdown vs R scripts, here's a link to a tutorial demonstrating the differences between R scripts and R Markdown.
+
 https://rmarkdown.rstudio.com/articles_intro.html
 
 This is an example of a chunk of R code embedded within the R markdown file. Note that code chunks are inserted with the tilde character repeated three times. The same tilde character x3 is also used to close out the R code chunk.
@@ -26,6 +27,21 @@ if (!require("tidyverse")) install.packages("tidyverse")
 library(tidyverse)
 ```
 
+```{r viridis message=FALSE}
+# Checks for viridis library and if not present, installs it
+# viridis is a library for generating graphs for the colour blind
+if (!require("viridis")) install.packags("viridis")
+# Load the required library
+library(viridis)
+```
+
+```{r skimr message=FALSE}
+# Checks for skimr and if not present, installs it
+if (!require("skimr")) install.package("skimr")
+# Load the required library
+library(skimr)
+```
+
 Here is a hyperlink to the data import tutorial:
 https://r4ds.had.co.nz/data-import.html
 
@@ -40,7 +56,7 @@ https://sites.cs.ucsb.edu/~pconrad/topics/BackslashVsForwardSlash/
 
 ```
 # Here we will load the available data into specimen_data.
-specimen_data <- read_tsv("E:\2021_UoG\IBIO 6000\DS-ITLP.txt")
+specimen_data <- read_tsv("E:/2021_UoG/IBIO 6000/src/Data/DS-ITLP.txt")
 # All the data from the tab separated format file should now be loaded into R.
 ```
 
@@ -56,5 +72,13 @@ This is an important consideration from the point of data normalization. Namely 
 # This will produce a basic graph using ggplot.
 # The graph it will generate is a composition of recordID and the captured insect family name within the order lepidoptera. (Since all captured specimens were moths.)
 ```
+specimen_data %>% skimr::skim()
+
 ggplot(data = specimen_data) +
   geom_point(mapping = aes(x = recordID, y = family_name))
+
+```
+# Or if we play with colour within aes() or defined aesthethic. 
+```
+ggplot(data = specimen_data) +
+  geom_point(mapping = aes(x = family_name, y = recordID, color = subfamily_name))
