@@ -30,14 +30,14 @@ library(tidyverse)
 ```{r viridis message=FALSE}
 # Checks for viridis library and if not present, installs it
 # viridis is a library for generating graphs for the colour blind
-if (!require("viridis")) install.packags("viridis")
+if (!require("viridis")) install.packages("viridis")
 # Load the required library
 library(viridis)
 ```
 
 ```{r skimr message=FALSE}
 # Checks for skimr and if not present, installs it
-if (!require("skimr")) install.package("skimr")
+if (!require("skimr")) install.packages("skimr")
 # Load the required library
 library(skimr)
 ```
@@ -68,17 +68,90 @@ Note that values that are blank are considered to be N/A or false, hence the exi
 
 This is an important consideration from the point of data normalization. Namely that some values within columns might not be filled in and as a result will show up as N/A.
 
-```
+```{r }
 # This will produce a basic graph using ggplot.
 # The graph it will generate is a composition of recordID and the captured insect family name within the order lepidoptera. (Since all captured specimens were moths.)
-```
 specimen_data %>% skimr::skim()
 
 ggplot(data = specimen_data) +
   geom_point(mapping = aes(x = recordID, y = family_name))
+# This plot puts the recordID along the x axis and the family name in the y axis.
+# Also so far, we haven't sorted out any N/A's yet.
+```
 
-```
-# Or if we play with colour within aes() or defined aesthethic. 
-```
+
+```{r }
+# Or if we play with colour within aes() or a defined aesthethic, in this case color for sub-family name.
 ggplot(data = specimen_data) +
-  geom_point(mapping = aes(x = family_name, y = recordID, color = subfamily_name))
+  geom_point(mapping = aes(x = subfamily_name, y = recordID, color = family_name))
+# Generally speaking though, this isn't useful as it only produces a plot containing a unique recordID, and family and sub-family along the x axis.
+# What we want instead, is a representation of the approximate distribution of the available 241 records.
+# Namely, we want to know how many unique families of the lepidoptera there are.
+# To do that, we need to do a count. And since regular expressions are a wondeful sorting tool, we'll look at doing that in the next code fragment.
+```
+
+  
+```{r }
+# In order to proceed, let's get a count of the the number of total rows of available data there are using nrow()
+nrow(specimen_data)
+# Great, now that we have a count of the number of rows let's store it as a variable.
+num_specimens <- nrow(specimen_data)
+# We're going to keep this variable stored as we'll use it for the min_limit and max_limit of our graphs later.
+# But next up, we need to do some regexing. (Searching for, matrching patterns, etc)
+# We'll also use regular expressions to perform data normalization to clean up the available data.
+# Namely, two of the columns contain useful information:
+#  1 - The location of the US port the specimen was collected
+#  2 - The suspected point of origin for where the specimen originally hitched a ride
+
+# However, let's see if we can remove N/A's using regular expressions
+# Specifically, we want to take all data from specimen_data matching a rule where family cannot be N/A
+# Note that I used Tortricidae as an example from data within the rows that I know to be there.
+filter(specimen_data, family == "Tortricidae", na.rm = TRUE)
+# Hmm, that seemed to fail. filter is only intended to be used for atomic and list type values.
+
+# Let's try using na.omit() and assign
+#wholespecimen_data <- na.omit(specimen_data)
+# Yikes, that chopped out a lot of the data. What gives?
+# Well, it has to do with na.omit() removing _anything_ with an N/A record in any columnn.
+# We want to be a little bit more specific. So let's try pattern matching for records from a specific column.
+# Specifically, any column with N/A in the family_name column. To do this, use the argument cols = c("x", "z"))
+#
+#wholespecimen_data <- na.omit(specimen_data, cols = "family_name")
+# Hmm, that failed too. Maybe I'm using cols wrong.
+#wholespecimen_data %>% na.omit(specimen_data, cols = "family_name")
+# Okay, that didn't work either.
+# Let's try using a compound assignment operator. 
+wholespecimen_data %>% filter(!is.na(family_name))
+# That didn't seem to do a thing. Let's try assigning it instead.
+wholespecimen_data <- filter(specimen_data, !is.na(family_name))
+# Holy cow, that did it!
+# Next, let's get a count of how many that is compared to the original dataset.
+nrow(wholespecimen_data)
+nrow(specimen_data)
+nrow(specimen_data) - nrow(wholespecimen_data)
+# Interesting, so within the family column there are 11 missing identifications.
+ggplot(wholespecimen_data, aes(x = family_name, y = subfamily_name)) +
+  geom_point()
+# Well that chart is rather drab. There are still NA's!
+# Ohhh, the y axis was assigned ot subfamily_name and any NA's present show along the y axis. Bummer dude.
+# So let's remove NA's using a compound assignment %>% operator)
+wholewholespecimen_data <- filter(wholespecimen_data, !is.na(subfamily_name))
+# Okay this is a bit convoluted but wholewholespecimen_data should have no NA's present for both family_name and subfamily_name
+# Let's try that graph again!
+ggplot(wholewholespecimen_data, aes(x = family_name, y = subfamily_name)) +
+  geom_point()
+# Very cool!
+# But let's try increasing the size of points depending on the number of specimens within subfamilies
+ggplot(wholewholespecimen_data, aes(x = family_name, y = subfamily_name)) +
+  geom_point()
+# Right away though, you might have observed something interesting.
+# Namely that family_name and subfamily_name are not very useful on charts as the graph will only give you a range of non-useful data.
+# Since graphs are best represented with quantifiable approximation of numbers aka atomic values aka integers
+# We need some numbers! To do that, let's try performing a count of each family.
+# To do that, let's start at the highest possible point.
+# In the x axis, we want a range from low to high.
+nrow(wholewholespecimen_data)
+# And since we know from using nrow() on wholewholespecimen_data that there are 85 rows,
+# we could make a graph with a min limit of 1 and a max limit of 85.
+# So let's look at doing that.
+```
