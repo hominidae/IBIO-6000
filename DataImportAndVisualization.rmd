@@ -153,5 +153,73 @@ ggplot(wholewholespecimen_data, aes(x = family_name, y = subfamily_name)) +
 nrow(wholewholespecimen_data)
 # And since we know from using nrow() on wholewholespecimen_data that there are 85 rows,
 # we could make a graph with a min limit of 1 and a max limit of 85.
-# So let's look at doing that.
+# To do that, we can use xlim() and ylim().
+# So let's look at doing that. But first we need a count of each type of family present in the dataset.
+table(specimen_data$family_name)
+# Interesting. So this gives the number of occurrences of specimens from each family.
+# As you can see from that, we have 164 specimens of "Tortricinae" alone.
+table(specimen_data$subfamily_name)
+# More interesting still, this is an even smaller sub-set.
+# So let's try it on the wholewholespecimen_data
+table(wholewholespecimen_data$family_name)
+# Interesting, so from specimen_data to wholewholespecimen_data there are gaps in identification.
+# Let's try it on subfamily_name too.
+table(wholewholespecimen_data$subfamily_name)
+# This is less interesting as it's identical to the previously generated table. But that's understandable since during
+# identification there was greater resolution. In the prior example, NA's were removed. Since sorting by subfamily_name
+# means further identification has already been performed the two should be identical.
+# But let's see what this looks like on a chart.
+
 ```
+So, it's pretty clear we need to adjust how we're working with the data. Specifically, we need to create a graph that uses the total number of rows along the y axis and where
+the collected specimens fall along the x axis.
+
+```{r }
+# Since there's a lot of code executed in the previous code block, let's create a new block.
+# Looking at specimen_data, it's pretty clear we have an integer representing each record/row individually. Compare that with the example dataset on mpg where the first column is the name of the vehicle.
+# Now, the problem is that previously we've been trying to create a scatter plot
+# with data that is not compatible. We need to either transform that data, or perform simple counts instead.
+ggplot(specimen_data) +
+  geom_bar(aes(family_name))
+# To do that, let's try creating a bar chart instead.
+# Notice how this represents the data we're after. An approximate count of the number of times a specific family is represented.
+# So let's try it again with subfamily_name too.
+ggplot(specimen_data) +
+  geom_bar(aes(subfamily_name))
+# Notice how many are NA's. Let's try with whole data instead.
+# Remember that we lost some data by removing NA's.
+nrow(specimen_data)
+# We start with 241.
+nrow(wholewholespecimen_data)
+# And after removing NA's we have 85.
+ggplot(wholewholespecimen_data) +
+  geom_bar(aes(subfamily_name))
+# Let's play with both family nad subfamily a bit.
+# Run these both to see what the differences are.
+ggplot(data = specimen_data) +
+  geom_bar(mapping = aes(family_name, color = subfamily_name))
+# And here's the data with NAs removed.
+ggplot(data = wholewholespecimen_data) +
+  geom_bar(mapping = aes(family_name, color = subfamily_name))
+```
+We have many more tests/experiments to do with creating graphs/charts/etc but this should suffice for now.
+Based on the available data, the most represted potentially invasive lepidoptera species found at US ports is Tortricidae and Tineidae.
+What makes those two families special?
+Are they all from the same port of origin?
+Or is more shipping from locations with those species present?
+Important questions to think about, but let's ignore that for now and focus on the next steps.
+The next code block section will be about using regular expressions to clean up text.
+Specifically, we need to clean up the collection_note column and the notes column.
+As an example, the collection_note column currently looks like this:
+
+Border Interception, Suspected country of origin: Peru, Interception location: California
+
+And the notes column looks like this:
+
+Intercepted in California, United States: original id as Gelechiidae
+
+So, look at this information objectively it's useful in two ways. The first is it tells us where the specimen was physically collected. It'd be pretty hard for any ignorant fool to argue that a specimen isn't present in an area when it was collected there, but I'm sure like the moron who launched himself on a steam rocket to prove that the earth was flat that they would try. Occam's razor about the simplest solution being true should have a similar thing about ignorance. The most ignorant among us will remain unconvinced even when facing down an extraordinary mountain of evidence that they're holding back the human species. Luckily, COVID-19 will likely go through several mutations and it'll do what viruses in nature are responsible for. Maintaining the health of overall health of a species by predominantly eliminating the slowest, the oldest, and the weakest. Morbid, but when you're not getting one of several mRNA vaccine's because a talking fat man on the radio or the news tells you not to, it's pretty clear that you're part of natural selection naturally selecting against yourself. End of rant.
+
+On to more pressing matters, like how do we extract this information to make it useful to us?
+
+Well, first we need to create a regular expression that takes the origin US state and country. Then we need to create a regular expression to extract the suspected point of origin country.
