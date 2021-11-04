@@ -200,12 +200,12 @@ ggplot(data = specimen_data) +
   geom_bar(mapping = aes(family_name, color = subfamily_name))
 # And here's the data with NAs removed.
 ggplot(data = wholewholespecimen_data) +
-  geom_bar(mapping = aes(family_name, color = subfamily_name))
+  geom_bar(mapping = aes(family_name, color = subfamily_name)) +
+  theme(text = element_text(size=8), axis.text.x = element_text(angle=90, hjust=1))
 ```
 We have many more tests/experiments to do with creating graphs/charts/etc but this should suffice for now.
-Based on the available data, the most represted potentially invasive lepidoptera species found at US ports is Tortricidae and Tineidae.
-What makes those two families special?
-Are they all from the same port of origin?
+Based on the available data, the most represented potentially invasive lepidoptera species found at US ports is Tortricidae and Tineidae.
+What makes those two families special? Are they all from the same port of origin?
 Or is more shipping from locations with those species present?
 Important questions to think about, but let's ignore that for now and focus on the next steps.
 The next code block section will be about using regular expressions to clean up text.
@@ -223,3 +223,55 @@ So, look at this information objectively it's useful in two ways. The first is i
 On to more pressing matters, like how do we extract this information to make it useful to us?
 
 Well, first we need to create a regular expression that takes the origin US state and country. Then we need to create a regular expression to extract the suspected point of origin country.
+
+We're going to attempt to use tidyr to perform the separate of collection_notes into two additional columns.
+
+```{r }
+# First, let's load tidyr
+library(tidyr)
+# Then, we're going to use separate() from tidyr to clean-up our data on a test set.
+# Let's copy wholewholespecimen_data into a test dataset
+testwwspecimen_data <- wholewholespecimen_data
+# Now that wholewholespecimen_data has been moved over to a test dataset, let's try separate()
+# Here is the test example for separate(), sep="" indicates what character the data will be separated by.
+# E.g. separate(table3,rate,sep="/",into=c("cases","pop"))
+# Use is first field: dataset
+# second field: column
+# third: separator
+# fourth: into = c for column followed by two new columns
+separate(testwwspecimen_data,notes, sep=",", into = c("intercept_type", "suspected_origin"))
+# You should receive a warning: Expected 2 pieces. Missing pieces filled with `NA` in 4 rows (18, 21, 70, 72)
+# And if you look at the data, it's garbled. We're accidentally matching several parts of the text unintentionally.
+# Let's look at data within collection_note:
+# Border Interception, Suspected country of origin: Peru, Interception Location, California, USA
+# As you can see, there's the first comma after "Border Interception", then another after the country, the interception location and following the state.
+# So, how do we fix this?
+# Let's start by looking at what we want to keep.
+# That's "Peru" and "California, USA"
+# So how do we selected just those two pieces of data? Also, we need to account for NA's since there are several. Also, some just indicate "Border Interception" and that's it.
+# What if we used a whole block of text as the separator?
+separate(testwwspecimen_data,notes, sep="Border Interception, Suspected country of origin:", into = c("intercept_type","suspected_origin"))
+# You should recieve a warning: Expected 2 pieces. Missing pieces filled with `NA` in 84 rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
+# And looking at the data...
+# intercept_type is filled with "Intercepted in California,United States: original id as Gelechiidae
+# And suspected_origin is filled with NA's.
+# Not ideal obvs.
+# So, what we might do is fall back on the original idea of using regular expressions.
+```
+
+First, let's take note of every possible value for the "notes" column by looking at the data.
+There's the fairly common (fits most cell values):
+ Border Interception
+ Border Interception, Suspect country of origin: Puerto Rico
+ Border Interception, Suspected country of origin: Peru, Interception location: California, USA
+ Border Interception, Suspection country of origin: United Kingdom of Great Britain and N. Ireland, Interception location: Maryland, USA
+ Border Interception, Suspected country of origin: Hondura, Interception location: Port Everglades FL, Interception Number: APMFL130386763001
+There are also NA's. But 90% of the data is in the format of the 3rd example.
+Let's count the special characters present. ,::,
+
+Let's strategize:
+ We could create several regular expressions to match each case and run them one at a time.
+ 
+ Or we could start by cleaning up the data a bit. What if we put everything after "Border Interception," in another column?
+ 
+ Or instead of using separate(), what if we used extract()?
