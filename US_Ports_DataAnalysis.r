@@ -93,7 +93,9 @@ whole_notes <- na.omit(notes, col ="notes")
 # whole_notes is where there are no NA's present in the notes column
 
 # First, are there matching recordID's in both? AKA are there data with NA's in both collection_note and notes?
-
+# Let's use intersect() to find out. Here, we take intersect and if there is matching data in x and y, it prints that matching data.
+intersect(notes_collectionnote_isna,notes_notes_isna)
+# In this case, it will print out 5 records. Coincidentally, both collection_note and notes have NA's present.
 
 # Can we take the text within whole_notes and whole_collectionnote and split them into their own?
 
