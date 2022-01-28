@@ -78,5 +78,25 @@ vector_city <- fixstates$intercept_city
 clean_city2state <- state.name[match(vector_city,state.name)]
 coalesce(clean_city2state,vector_city)
 
-# We can't simply move this list back in since we've already worked with "intercept_state" and we want to preserve it.
-# Instead, we'll use cbind but we want ot omit any locations where NA's exist from being overwritten with an NA
+# Let's perform a sanity check
+checkcity2state <- data.frame(clean_city2state,vector_city)
+# Looks okay. Save this for later
+
+# Can we do this a second time to double-check?
+# We want to isolate where the separate function split "New York" into "New" and "York" for intercept_city and intercept_state respectively
+# We can do that by creating a third list that combines intercept_city and intercept_state together then checking it against the list
+citysanity_check <- paste(fixstates$intercept_city, fixstates$intercept_state, sep=" ")
+# Obvs something went wrong, because if you look at citysanity_check, there are "NA NA"s and "California NA"s
+
+# Let's try using this function from sysilviakim called Kmisc
+# First install it.
+install.packages("remotes")
+# Then install it.
+remotes::install_github("sysilviakim/Kmisc")
+
+# pasta_na removes the " NA" and "NA NA" because that's obviously not something we want.
+citysanity_check <- paste_na(fixstates$intercept_city, fixstates$intercept_state, sep=" ")
+
+# use the same matching function as before to confirm
+citysanity_check <- state.name[match(citysanity_check,state.name)]
+
