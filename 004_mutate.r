@@ -3,7 +3,7 @@ library(tidyverse)
 library(maps)
 
 # The data set.
-specimen_data <- read_tsv("../DS-ITLP.txt") # Change to wherever you downloade the DS-ITLP.txt file from the github
+specimen_data <- read_tsv("../DS-ITLP.txt") # Change to wherever you downloaded the DS-ITLP.txt file from the github
 
 # Take specimen_data and copy specific columns to work on
 col_note <- specimen_data %>%
