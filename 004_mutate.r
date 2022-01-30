@@ -1,5 +1,6 @@
 # Load tidyverse library
 library(tidyverse)
+library(maps)
 
 # These are test cases from "collection_note"
 siru <- 
@@ -16,7 +17,7 @@ siru <-
 
 # Actual data, working set
 siru <- col_note %>%
-  select(recordID, collection_note, notes)
+  select(recordID, notes,collection_note)
 
 # A working set, sans "Border Interception, "
 siru2 <- siru %>%
@@ -44,14 +45,36 @@ siru6 <- siru2 %>%
     state1 = str_extract(rmborder, "(?<=Interception location: ).*(?=, USA)"), # Match ", USA"
     state2 = str_extract(rmborder, "(?<=Interception location: ).*(?=,U)"), # Match between loc and ",U"
     state3 = str_extract(rmborder, "(?<=Interception location: )California"), # Match "California"
-    state4 = str_extract(rmborder, "(?<=Interception location: )New York"),
-    state5 = str_extract(rmborder, "(?<=Interception location: ).*(?=, Interception Number)") # Match between inter loc and inter num
+    state4 = str_extract(rmborder, "(?<=Interception location: )New York"), # Match "New York
+    state5 = str_extract(rmborder, "([A-Z][A-Z](?!A))") # Match space + capital letter + capital letter
   )
 
-# Todo: Strip city out, retain two letter state code from siru6
+# Replace two letter state code with full state name instead
+# First, load state names and state abbreviation into a dataframe
+states <- data.frame(state.abb, state.name)
+stateabbrv <- siru6$state5
 
+# Next, let's fix state5 by taking the state code and replacing it with the full name
+# We're using match to replace but within a vector
+expandstates <- state.name[match(stateabbrv,state.abb)]
 
-siru5 <- siru4 %>%
-  mutate(
-    intercept_number = str_extract(col, "(?<=Interception Number: ).*")
-  )
+# Now we need to use coalesce to combine state1, state2, state3, state4, and the fixed state5
+statesfixed <- coalesce(siru6$state1,siru6$state2,siru6$state3,siru6$state4,expandstates)
+
+# Next, make a new dataframe called siru7
+siru7 <- data.frame(siru2$recordID,siru2$rmborder,originfixed,statesfixed)
+
+# It appears we need to add Puerto Rico as a state so "PR" shows up correctly.
+notrealstate <- data.frame("PR", "Puerto Rico")
+notrealstate2 <- data.frame("NZ", "Arizona")
+names(notrealstate) <- c("state.abb", "state.name")
+names(notrealstate2) <- c("state.abb", "state.name")
+states <- rbind(states,notrealstate)
+states <- rbind(states,notrealstate2)
+
+# Next, let's run that matching shit all over again.
+expandstates <- states$state.name[match(stateabbrv,states$state.abb)]
+statesfixed <- coalesce(siru6$state1,siru6$state2,siru6$state3,siru6$state4,expandstates)
+
+# All done! We have country of origin and intercept state.
+siru7 <- data.frame(siru2$recordID,siru2$rmborder,originfixed,statesfixed)
