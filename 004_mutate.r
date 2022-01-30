@@ -2,7 +2,15 @@
 library(tidyverse)
 library(maps)
 
-# These are test cases from "collection_note"
+# The data set.
+specimen_data <- read_tsv("../DS-ITLP.txt") # Change to wherever you downloade the DS-ITLP.txt file from the github
+
+# Take specimen_data and copy specific columns to work on
+col_note <- specimen_data %>%
+  select(recordID, collection_note, notes)
+
+
+# These are test cases from "collection_note" if you don't want to load the file for some reason.
 siru <- 
   data.frame(col = c("Border Interception, Suspected country of origin: Peru, Interception location: California, USA", 
                      "Border Interception, Suspected country of origin: Ecuador, Interception location: New York, USA",
@@ -78,3 +86,5 @@ statesfixed <- coalesce(siru6$state1,siru6$state2,siru6$state3,siru6$state4,expa
 
 # All done! We have country of origin and intercept state.
 siru7 <- data.frame(siru2$recordID,siru2$rmborder,originfixed,statesfixed)
+
+# Now let's process the "notes" field now too
