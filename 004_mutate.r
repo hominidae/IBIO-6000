@@ -3,12 +3,11 @@ library(tidyverse)
 library(maps)
 
 # The data set.
-specimen_data <- read_tsv("../DS-ITLP.txt") # Change to wherever you downloaded the DS-ITLP.txt file from the github
+specimen_data <- read_tsv("../DS-ITLP.txt") # Change to wherever you downloade the DS-ITLP.txt file from the github
 
 # Take specimen_data and copy specific columns to work on
 col_note <- specimen_data %>%
   select(recordID, collection_note, notes)
-
 
 # These are test cases from "collection_note" if you don't want to load the file for some reason.
 siru <- 
@@ -23,9 +22,9 @@ siru <-
                      "Border Interception, Suspected country of origin: US Virgin Islands",
                      "Border Interception, Interception location: Blaine WA, Interception Number:  APSWA100625553001"))
 
-# Actual data, working set
+# Actual data, working set. Will fail unless you actually load specimen_data
 siru <- col_note %>%
-  select(recordID, notes,collection_note)
+  select(recordID, collection_note)
 
 # A working set, sans "Border Interception, "
 siru2 <- siru %>%
@@ -87,4 +86,68 @@ statesfixed <- coalesce(siru6$state1,siru6$state2,siru6$state3,siru6$state4,expa
 # All done! We have country of origin and intercept state.
 siru7 <- data.frame(siru2$recordID,siru2$rmborder,originfixed,statesfixed)
 
-# Now let's process the "notes" field now too
+names(siru7) <- c("recordID", "col_note", "origincountry", "intercept_state")
+
+# Now that we've done that, let's move on and process the "notes" field now too
+# First, populate siru8 with the recordID and notes field
+siru8 <- col_note %>%
+  select(recordID, notes)
+
+# First, let's extract intercept_state
+siru9 <- siru8 %>%
+  mutate( # Intercepted in California,United States: original id as Gelechiidae
+    origin1 = str_extract(notes, "(?<=Intercepted in ).*(?=,)"), # Matches most
+    origin2 = str_extract(notes, "(?<=Intercepted in ,).*(?=:)"), # Catches a few errors from Puerto Rico
+    origin3 = str_extract(notes, "(?<=Intercepted in )Puerto Rico(?=:)") # Match only "Intercepted in Puerto Rico: Cydia splendana"
+  ) # That looks to be about it, recordID 3271851 might be an error since it returns "United States" which is false but we can remove that in post.
+
+# So, as per before we need to coalesce these into a master list.
+origin2fixed <- coalesce(siru9$origin1,siru9$origin2,siru9$origin3)
+
+# Let's put these into a new dataframe and compare visually to confirm
+siru10 <- data.frame(siru2$recordID,siru9$notes,origin2fixed)
+
+# Before we move on however, I noticed that one field is wrong. It's because coalesce uses the first non-empty/NA. Since it's an empty string, it uses the empty string first. We could however change precedence to see if that fixes the issue before trying to find another solution so let's try that first.
+origin2fixed <- coalesce(siru9$origin2,siru9$origin1,siru9$origin3)
+siru11 <- data.frame(siru2$recordID,siru9$notes,origin2fixed)
+
+# That seemed to work. Let's go back to square one and combine all the countries of origin together.
+origin3fixed <- coalesce(originfixed,origin2fixed)
+siru11 <- data.frame(siru2$recordID,origin3fixed,statesfixed)
+names(siru11) <- c("recordID","country_origin","intercept_state")
+
+# We're going to need a dataframe containing recordID, country_origin, intercept_state, BIN_URI (aka unique BOLD ID's), family_name, subfamily_name, genus, species
+# as well as lifestage.
+finalcopy <- data.frame(specimen_data$recordID,origin3fixed,statesfixed,specimen_data$bin_uri,specimen_data$family_name,specimen_data$subfamily_name,specimen_data$genus_name,specimen_data$species_name,specimen_data$lifestage)
+
+# I noticed an issue with lifestage not matching. Change L to Larvae, A to Adult, P to Pupae.
+# Create a test dataframe to try this out on
+lifestage <- data.frame(specimen_data$lifestage)
+names(lifestage) <- c("lifestage")
+
+# We need to convert lifestage to a f
+lifestage$lifestage <- as.character(lifestage$lifestage)
+
+# Next, replace A with Adult, L with Larvae, P with Pupae
+lifestage$lifestage[lifestage$lifestage == "A"] <- "Adult"
+lifestage$lifestage[lifestage$lifestage == "L"] <- "Larvae"
+lifestage$lifestage[lifestage$lifestage == "P"] <- "Pupae"
+
+# Convert back to factor
+lifestage$lifestage <- as.factor(lifestage$lifestage)
+
+# Re-integrate into final
+# Populate final
+finalcopy <- specimen_data %>%
+  select(recordID, bin_uri,family_name,subfamily_name,genus_name,species_name)
+
+# Use cbind to add correct lifestage, and the origin and intercept state
+final <- cbind(finalcopy,lifestage,origin3fixed,statesfixed)
+
+# Finally, change names of country_origin and intercept_state
+names(final) <- c("recordID","bin_uri","family_name","subfamily_name","genus_name","species_name","lifestage","country_origin","intercept_state")
+
+writeme <- final
+
+# That's it. We're finally done. Let's write it to a CSV.
+write_csv(x = writeme, "E:/2021_UoG/IBIO 6000/src/Data/working_copy.csv")
