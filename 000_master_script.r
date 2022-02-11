@@ -1,9 +1,21 @@
+# IBIO*6000 - Ecology & Behaviour
+# Bryan Vandenbrink
+
+# So far, this script includes everything.
+# Split this into logical stages.
+
+# Individual R scripts will by splitting 000_mutate.r this way:
+# 001_collection_note.r will output a csv containing recordID, country_origin, and intercept_state
+# 002_notes.r will output a csv containing recordID, and intercept_state
+# 003_fixdata.r will take the input from both those and normalize it appropriately.
+# 004_exploratoryanalysis.r will perform exploratory analysis of the newly normalized dataset.
+
 # Load tidyverse library
 library(tidyverse)
 library(maps)
 
 # The data set.
-specimen_data <- read_tsv("E:/2021_UoG/IBIO 6000/src/Data/DS-ITLP.txt") # Change to wherever you downloade the DS-ITLP.txt file from the github
+specimen_data <- read_tsv("E:/2021_UoG/IBIO 6000/src/data/DS-ITLP.txt") # Change to wherever you downloade the DS-ITLP.txt file from the github
 
 # Take specimen_data and copy specific columns to work on
 col_note <- specimen_data %>%
@@ -51,6 +63,9 @@ stateabbrv <- kin6$state5
 # Next, let's fix state5 by taking the state code and replacing it with the full name
 # We're using match to replace but within a vector
 expandstates <- state.name[match(stateabbrv,state.abb)]
+
+############################################################################################# Maybe try match with the src2destination
+# Union also possible
 
 # Now we need to use coalesce to combine state1, state2, state3, state4, and the fixed state5
 statesfixed <- coalesce(kin6$state1,kin6$state2,kin6$state3,kin6$state4,expandstates)
@@ -108,7 +123,7 @@ names(sirukin11) <- c("recordID","collection_notes","notes","country_origin","in
 
 # We're going to need a dataframe containing recordID, country_origin, intercept_state, BIN_URI (aka unique BOLD ID's), family_name, subfamily_name, genus, species
 # as well as lifestage.
-finalcopy <- data.frame(specimen_data$recordID,originfixed,intercept3fixed,specimen_data$bin_uri,specimen_data$family_name,specimen_data$subfamily_name,specimen_data$genus_name,specimen_data$species_name,specimen_data$lifestage)
+semifinalcopy <- data.frame(specimen_data$recordID,originfixed,intercept3fixed,specimen_data$bin_uri,specimen_data$family_name,specimen_data$subfamily_name,specimen_data$genus_name,specimen_data$species_name,specimen_data$lifestage)
 
 # I noticed an issue with lifestage not matching. Change L to Larvae, A to Adult, P to Pupae.
 # Create a test dataframe to try this out on
@@ -128,16 +143,16 @@ lifestage$lifestage <- as.factor(lifestage$lifestage)
 
 # Re-integrate into final
 # Populate final
-finalcopy <- specimen_data %>%
+semifinalcopy2 <- specimen_data %>%
   select(recordID, bin_uri,family_name,subfamily_name,genus_name,species_name)
 
 # Use cbind to add correct lifestage, and the origin and intercept state
-final <- cbind(finalcopy,lifestage,originfixed,statesfixed)
-
+final <- cbind(semifinalcopy2,lifestage,originfixed,statesfixed)
 # Finally, change names of country_origin and intercept_state
 names(final) <- c("recordID","bin_uri","family_name","subfamily_name","genus_name","species_name","lifestage","country_origin","intercept_state")
 
+# Write the data
 writeme <- final
-
 # That's it. We're finally done. Let's write it to a CSV.
 write_csv(x = writeme, "E:/2021_UoG/IBIO 6000/src/Data/working_copy.csv")
+
