@@ -4,8 +4,7 @@
 # Compartmentalize!
 
 # This script does one thing and one thing only, it processes country_origin and intercept_state information from 001_collection_note.r and 002_notes.r
-# In the process of combing that data together, it'll also be normalized against standard naming conventions and utilize available GPS coordinates for the
-# exact geographic center of named countries and US states.
+
 
 # Upon completion, it will save that normalized data as csv file
 
@@ -23,7 +22,7 @@ countries <- read_csv("E:/2021_UoG/IBIO 6000/src/data/countries_utf8.txt")
 
 # We have a built-in within R that contains state names, abbreviated state names, and their geographical center.
 # Let's create a data frame with that information
-states <- data.frame(state.abb, state.name,state.center)
+states <- data.frame(state.abb,state.name,state.center)
 # Then let's rename those columns
 names(states) <- c("state.abb","state.name","state.long","state.lat")
 
@@ -32,8 +31,15 @@ names(states) <- c("state.abb","state.name","state.long","state.lat")
 notrealstate <- data.frame("PR", "Puerto Rico","-66.4314","18.2270")
 names(notrealstate) <- c("state.abb", "state.name","state.long","state.lat")
 
+# U.S. Virgin Ilands Centre required too!
+# Also requires lat/long fixes for Alaska, Delaware, Hawaii, Rhode Island, U.S. Virgin Islands
+
 # Append it to the end of the states dataframe
 states <- rbind(states,notrealstate)
+
+# Let's move the lat/long columns
+statesfixed <- data.frame(states$state.abb,states$state.name,states$state.lat,states$state.long)
+names(statesfixed) <- c("state.abb","state.name","state.lat","state.long")
 
 # Create two copies of notes country_origin and intercept_state
 sourcesnotdistinct <- data.frame(notes$country_origin)
