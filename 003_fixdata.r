@@ -30,8 +30,14 @@ names(states) <- c("state.abb","state.name","state.long","state.lat")
 # So let's fix that for our purposes.
 notrealstate <- data.frame("PR", "Puerto Rico","-66.4314","18.2270")
 names(notrealstate) <- c("state.abb", "state.name","state.long","state.lat")
+# We also have an issue where several states have the incorrect geographic center.
+# Alaska should be: 64.731667, -152.47
+# Delaware should be: 38.9896, -75.505
+# Hawaii should be: 20.95027778,-156.73166667
+# Rhode Island should be: 41.6762, -71.5562
+# U.S. Virgin Islands should be: 18.060930, -64.840971
 
-# U.S. Virgin Ilands Centre required too!
+# U.S. Virgin Islands Centre required too!
 # Also requires lat/long fixes for Alaska, Delaware, Hawaii, Rhode Island, U.S. Virgin Islands
 
 # Append it to the end of the states dataframe
