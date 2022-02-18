@@ -105,3 +105,8 @@ names(final) <- c("recordID","country_origin","intercept_state")
 
 # Now, we're done with collection_note let's save the data.
 write_csv(x = final, "E:/2021_UoG/IBIO 6000/src/Data/collection_note_processed.csv")
+
+# In summary, here is what was done:
+# 1 - Copied DNA barcoding data from DS-ITLP.txt to specimen_data
+# 2 - Processed the text string within 'collection_note' for both country_origin and intercept_state information
+# 3 - Saved as "collection_note_processed.csv"
