@@ -54,3 +54,8 @@ names(notes_final) <- c("recordID","country_origin","intercept_state")
 
 # Save as a CSV
 write_csv(x = notes_final, "E:/2021_UoG/IBIO 6000/src/Data/notes_processed.csv")
+
+# In summary, here is what was done:
+# 1 - Extracted intercept_state information from the "notes" column
+# 2 - Combined "collection_note_processed.csv" and intercept_state information from the "notes" column
+# 3 - Saved the combined data as "notes_processed.csv"
