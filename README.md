@@ -7,7 +7,7 @@ This code is intended to support analysis of the DNA Barcoding data using R and 
 # Data analysis
 1 - Determine approximate # of identified specimens by family, sub-family, genus, and species
 
-2 - Determine approxiamte # of un-identified specimens
+2 - Determine approximate # of un-identified specimens
 
 3 - Determine representation of specimens per country of origin
 
