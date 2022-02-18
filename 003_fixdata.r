@@ -4,8 +4,7 @@
 # Compartmentalize!
 
 # This script does one thing and one thing only, it processes country_origin and intercept_state information from 001_collection_note.r and 002_notes.r
-
-
+# There a small number of fixes to the data that are required for normalization purposes.
 # Upon completion, it will save that normalized data as csv file
 
 # Load library
@@ -28,17 +27,12 @@ names(states) <- c("state.abb","state.name","state.long","state.lat")
 
 # A couple of fixes needed. First, Puerto Rico is not considered a US state.
 # So let's fix that for our purposes.
-notrealstate <- data.frame("PR", "Puerto Rico","-66.4314","18.2270")
-names(notrealstate) <- c("state.abb", "state.name","state.long","state.lat")
-# We also have an issue where several states have the incorrect geographic center.
-# Alaska should be: 64.731667, -152.47
-# Delaware should be: 38.9896, -75.505
-# Hawaii should be: 20.95027778,-156.73166667
-# Rhode Island should be: 41.6762, -71.5562
-# U.S. Virgin Islands should be: 18.060930, -64.840971
-
-# U.S. Virgin Islands Centre required too!
-# Also requires lat/long fixes for Alaska, Delaware, Hawaii, Rhode Island, U.S. Virgin Islands
+notrealstate <- data.frame(
+  state.abb = c("PR","VI"),
+  state.name = c("Puerto Rico","U.S. Virgin Islands"),
+  state.long = c("-66.4314","-64.840971"),
+  state.lat = c("18.2270","18.060930")
+  )
 
 # Append it to the end of the states dataframe
 states <- rbind(states,notrealstate)
@@ -58,3 +52,19 @@ sourcesnotdistinct$name[sourcesnotdistinct == "The United States of America"] <-
 sourcesnotdistinct$name[sourcesnotdistinct == "US Virgin Islands"] <- "U.S. Virgin Islands"
 sourcesnotdistinct$name[sourcesnotdistinct == "Democratic Republic of Congo"] <- "Congo [DRC]"
 sourcesnotdistinct$name[sourcesnotdistinct == "United Kingdom of Great Britain and N. Ireland"] <- "Great Britain"
+
+# We also have an issue where several states from the states built-in have the incorrect geographic center. So this is a good time to fix those.
+# Not ideal, but I'll have to figure out how to do join operations by a specific row ID at some point.
+# Alaska
+statesfixed$state.lat[statesfixed$state.lat=="49.25"] <- "64.73166" # Replace Alaska lat with correct lat
+statesfixed$state.long[statesfixed$state.long=="-127.25"] <- "-152.47" # Replace Alaska long with correct long
+# Delaware
+statesfixed$state.lat[statesfixed$state.lat=="38.6777"] <- "38.9896" # Replace Delaware lat with correct lat
+statesfixed$state.long[statesfixed$state.long=="-74.9841"] <- "-75.505" # Replace Delaware long with correct long
+# Rhode Island
+statesfixed$state.lat[statesfixed$state.lat=="41.5928"] <- "41.6762" # Replace Rhode Island lat with correct lat
+statesfixed$state.long[statesfixed$state.long=="-71.1244"] <- "-71.5562" # Replace Rhode Island long with correct long
+# Yay. statesfixed is now correct and proper.
+
+# Finally, export the processed and normalized data
+write_csv(x = notes_final, "E:/2021_UoG/IBIO 6000/src/Data/alldata_processed.csv")
