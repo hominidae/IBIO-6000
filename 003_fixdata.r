@@ -54,6 +54,8 @@ sourcesnotdistinct$name[sourcesnotdistinct == "The United States of America"] <-
 sourcesnotdistinct$name[sourcesnotdistinct == "US Virgin Islands"] <- "U.S. Virgin Islands"
 sourcesnotdistinct$name[sourcesnotdistinct == "Democratic Republic of Congo"] <- "Congo [DRC]"
 sourcesnotdistinct$name[sourcesnotdistinct == "United Kingdom of Great Britain and N. Ireland"] <- "Great Britain"
+sourcesnotdistinct$name[sourcesnotdistinct == "Viet Nam"] <- "Vietnam"
+sourcesnotdistinct$name[sourcesnotdistinct == "Hondura"] <- "Honduras"
 
 # Do the same for destinationsnotdistinct
 names(destinationsnotdistinct) <- c("name")
