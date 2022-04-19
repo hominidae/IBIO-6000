@@ -2,7 +2,6 @@
 # Bryan Vandenbrink
 
 # Todo:
-# Compartmentalize! 000_master.r currently contains all code.
 # Move code over into separate sections as each objective is complete.
 # This script should do one thing and one thing only, sort through the "collection_note" column of specimen_data
 # and extract both country_origin and intercept_state information.
